@@ -16,7 +16,8 @@ namespace eAutoInitNumbers
 		actions=guiobject+increment,
 		dvb=actions+increment,
 		service=dvb+increment,
-		osd=service+increment,
+		hisi=service+increment,
+		osd=hisi+increment,
 		wizard=osd+increment,
 		main=osd+increment*5,
 	};

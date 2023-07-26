@@ -5,6 +5,11 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+extern "C"
+{
+#include <lib/hisi/hi_unf_sound.h>
+#include <lib/hisi/hi_common.h>
+} // extern "C"
 
 #include <linux/dvb/version.h>
 #if DVB_API_VERSION < 3
@@ -143,6 +148,8 @@ int eDVBVolumecontrol::checkVolume(int vol)
 
 void eDVBVolumecontrol::setVolume(int left, int right)
 {
+    HI_UNF_SND_GAIN_ATTR_S stGain;
+    stGain.bLinearMode = HI_TRUE;
 		/* left, right is 0..100 */
 	leftVol = checkVolume(left);
 	rightVol = checkVolume(right);
@@ -181,6 +188,8 @@ void eDVBVolumecontrol::setVolume(int left, int right)
 
 	//HACK?
 	CFile::writeInt("/proc/stb/avs/0/volume", left); /* in -1dB */
+    stGain.s32Gain = leftVol;
+    HI_UNF_SND_SetVolume(HI_UNF_SND_0, HI_UNF_SND_OUTPUTPORT_ALL, &stGain);
 #endif
 }
 
@@ -215,6 +224,7 @@ void eDVBVolumecontrol::volumeMute()
 
 	//HACK?
 	CFile::writeInt("/proc/stb/audio/j1_mute", 1);
+	HI_UNF_SND_SetMute(HI_UNF_SND_0, HI_UNF_SND_OUTPUTPORT_ALL, HI_TRUE);																						
 #endif
 }
 
@@ -238,6 +248,7 @@ void eDVBVolumecontrol::volumeUnMute()
 
 	//HACK?
 	CFile::writeInt("/proc/stb/audio/j1_mute", 0);
+    HI_UNF_SND_SetMute(HI_UNF_SND_0, HI_UNF_SND_OUTPUTPORT_ALL, HI_FALSE);	
 #endif
 }
 

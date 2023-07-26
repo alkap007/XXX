@@ -6,6 +6,7 @@ dvb_libenigma_dvb_a_SOURCES = \
 	dvb/crc32.cpp \
 	dvb/db.cpp \
 	dvb/decoder.cpp \
+	dvb/hisi_decoder.cpp \
 	dvb/demux.cpp \
 	dvb/dvb.cpp \
 	dvb/dvbtime.cpp \
@@ -47,6 +48,7 @@ dvbinclude_HEADERS = \
 	dvb/crc32.h \
 	dvb/db.h \
 	dvb/decoder.h \
+	dvb/hisi_decoder.h \
 	dvb/demux.h \
 	dvb/dvb.h \
 	dvb/dvbtime.h \

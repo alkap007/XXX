@@ -30,6 +30,7 @@ include service/Makefile.inc
 include driver/Makefile.inc
 include nav/Makefile.inc
 include gui/Makefile.inc
+include hisi/Makefile.inc
 include mmi/Makefile.inc
 include network/Makefile.inc
 include python/Makefile.inc

@@ -8,12 +8,14 @@
 #endif
 
 class eSocketNotifier;
+class eHISIDecoder;
 
 class eDVBAudio: public iObject
 {
 	DECLARE_REF(eDVBAudio);
 private:
 	ePtr<eDVBDemux> m_demux;
+	ePtr<eHISIDecoder> m_hisi;
 	int m_fd, m_fd_demux, m_dev, m_is_freezed;
 #ifdef DREAMNEXTGEN
 	eTsParser *m_TsPaser;
@@ -36,7 +38,8 @@ class eDVBVideo: public iObject, public sigc::trackable
 {
 	DECLARE_REF(eDVBVideo);
 private:
-	ePtr<eDVBDemux> m_demux;
+	ePtr<eDVBDemux> m_demux
+	ePtr<eHISIDecoder> m_hisi;;
 	int m_fd, m_fd_demux, m_dev;
 	bool m_fcc_enable;
 	static int m_close_invalidates_attributes;
@@ -58,16 +61,10 @@ public:
 	void unfreeze();
 	int getPTS(pts_t &now);
 	virtual ~eDVBVideo();
-	RESULT connectEvent(const sigc::slot1<void, struct iTSMPEGDecoder::videoEvent> &event, ePtr<eConnection> &conn);
-	int getWidth();
-	int getHeight();
-	int getProgressive();
-	int getFrameRate();
-	int getAspect();
-	int getGamma();
+
 };
 
-class eDVBPCR: public iObject
+class eDVBPCR: public iObject  
 {
 	DECLARE_REF(eDVBPCR);
 private:
@@ -106,7 +103,12 @@ private:
 	ePtr<eDVBVideo> m_video;
 	ePtr<eDVBPCR> m_pcr;
 	ePtr<eDVBTText> m_text;
+	ePtr<eHISIDecoder> m_hisi;
 	int m_vpid, m_vtype, m_apid, m_atype, m_pcrpid, m_textpid;
+	int m_width, m_height, m_framerate, m_aspect, m_progressive;
+ 	enum
+ 	{
+ 		changeVideo = 1,
 #ifdef DREAMNEXTGEN
 	int m_width, m_height, m_framerate, m_aspect, m_progressive;
 #endif
@@ -124,8 +126,6 @@ private:
 	bool m_has_audio;
 	int setState();
 	ePtr<eConnection> m_demux_event_conn;
-	ePtr<eConnection> m_video_event_conn;
-
 	void demux_event(int event);
 	void video_event(struct videoEvent);
 	sigc::signal1<void, struct videoEvent> m_video_event;
@@ -142,6 +142,8 @@ private:
 	int m_fcc_vtype;
 	int m_fcc_pcrpid;
 	void finishShowSinglePic(); // called by timer
+	ePtr<eTimer> m_VideoRead;
+	void parseVideoInfo(); // called by timer
 public:
 #ifdef DREAMNEXTGEN
 	enum { aMPEG, aAC3, aDTS, aAAC, aAACHE, aLPCM, aDTSHD, aDDP,UNKNOWN = -1, MPEG2=0, MPEG4_H264, VC1 = 3, MPEG4_Part2, VC1_SM, MPEG1, H265_HEVC, AVS = 16, AVS2 = 40 };
