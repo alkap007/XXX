@@ -59,6 +59,9 @@ fbClass::fbClass(const char *fb)
 		eDebug("[fb] %s %m", fb);
 		goto nolfb;
 	}
+#ifdef HAVE_HISILICON
+	fdDisp = open("/dev/hi_disp", O_RDWR | O_NONBLOCK, 0);
+#endif
 
 	if (ioctl(fbFd, FBIOGET_VSCREENINFO, &screeninfo)<0)
 	{
@@ -286,6 +289,23 @@ int fbClass::SetMode(int nxRes, int nyRes, int nbpp)
 #endif
 
 	memset(lfb, 0, stride*yRes);
+#endif
+#ifdef HAVE_HISILICON
+	if (fdDisp < 0)
+		eDebug("Error: File '/dev/hi_disp' can't not be opened.");
+	else
+	{
+		DISP_VIRTSCREEN_S virtscreen;
+		virtscreen.enDisp 				  = 1; /* HI_UNF_DISPLAY1 */
+		virtscreen.stVirtScreen.s32X      = 0;
+		virtscreen.stVirtScreen.s32Y      = 0;
+		virtscreen.stVirtScreen.s32Height = nyRes;
+		virtscreen.stVirtScreen.s32Width  = nxRes;
+
+		if (ioctl(fdDisp, CMD_DISP_SET_VIRTSCREEN, &virtscreen) < 0)
+			eDebug("Failed to set resolution %dx%d in \"/dev/hi_disp\" for hisilicon.", nxRes, nyRes);
+	}
+#endif
 	blit();
 	return 0;
 }
@@ -316,6 +336,7 @@ void fbClass::blit()
 {
 	if (fbFd < 0) return;
 #if !defined(CONFIG_ION)
+#elif !defined(CONFIG_ION) && !defined(HAVE_HISILICON)
 	if (m_manual_blit == 1) {
 		if (ioctl(fbFd, FBIO_BLIT) < 0)
 			eDebug("[fb] FBIO_BLIT %m");
@@ -340,6 +361,11 @@ fbClass::~fbClass()
 	{
 		::close(fbFd);
 		fbFd = -1;
+	}
+	if (fdDisp >= 0)
+	{
+		::close(fdDisp);
+		fdDisp = -1;
 	}
 }
 
@@ -378,7 +404,6 @@ void fbClass::unlock()
 void fbClass::enableManualBlit()
 {
 	if (fbFd < 0) return;
-#ifndef CONFIG_ION
 	unsigned char tmp = 1;
 	if (ioctl(fbFd,FBIO_SET_MANUAL_BLIT, &tmp)<0)
 		eDebug("[fb] FBIO_SET_MANUAL_BLIT %m");
@@ -389,7 +414,7 @@ void fbClass::enableManualBlit()
 
 void fbClass::disableManualBlit()
 {
-#ifndef CONFIG_ION
+#if !defined(CONFIG_ION) && !defined(HAVE_HISILICON)
 	unsigned char tmp = 0;
 	if (fbFd < 0) return;
 	if (ioctl(fbFd,FBIO_SET_MANUAL_BLIT, &tmp)<0)

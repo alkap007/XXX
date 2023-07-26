@@ -24,6 +24,7 @@ enigma2_LDADD_WHOLE = \
 	$(top_builddir)/lib/driver/libenigma_driver.a \
 	$(top_builddir)/lib/mmi/libenigma_mmi.a \
 	$(top_builddir)/lib/dvb/libenigma_dvb.a \
+	$(top_builddir)/lib/hisi/libenigma_hisi.a \
 	$(top_builddir)/lib/dvb_ci/libenigma_dvb_ci.a \
 	$(top_builddir)/lib/gdi/libenigma_gdi.a \
 	$(top_builddir)/lib/gui/libenigma_gui.a \
@@ -46,7 +47,7 @@ enigma2_LDADD = \
 	@ALSA_LIBS@ \
 	@AVAHI_LIBS@ \
 	@LIBHIACCEL_LIBS@ \
-	-ltuxtxt32bpp -lcrypt -lrt -ldl
+	-ltuxtxt32bpp -lcrypt -lrt -ldl -ljpeg8 -lhi_msp -lhi_common
 
 enigma2_LDFLAGS = -Wl,--export-dynamic
 
